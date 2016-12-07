@@ -1,0 +1,480 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+    <head>
+        
+        <script language="JavaScript1.2" type="text/javascript">
+            <!--
+               
+
+
+         
+                var mapa_width = 10;
+         
+                var mapa_height = 10;
+            
+                
+                var mapa_width_anterior = mapa_width;
+                
+                var mapa_height_anterior = mapa_height;
+
+               
+                var celda_width = 40;
+               
+                var celda_height = 40;
+
+               
+                var opcion_seleccionada = "";
+
+              
+                var celdas_pintadas = new Array();
+
+           
+                var mapa_codigo = "";
+
+
+
+                if (document.images)
+                 {
+           
+                     var personaje_imagen = new Image(celda_width, celda_height);
+                     nombre_personaje_imagen = "img/yas_down1.gif";
+                     personaje_imagen.src = nombre_personaje_imagen; //Imagen del personaje.
+                     var personaje_copa_imagen = new Image(celda_width, celda_height);
+                     nombre_personaje_copa_imagen = "img/yas_copa_editor.gif";
+                     personaje_copa_imagen.src = nombre_personaje_copa_imagen; //Imagen del personaje encima de una copa vacia (agujero).
+                     var pared_imagen = new Image(celda_width, celda_height);
+                     nombre_pared_imagen = "img/piedra1.gif";
+                     pared_imagen.src = nombre_pared_imagen; //Imagen de la pared.
+                     var agujero_vacio_imagen = new Image(celda_width, celda_height);
+                     nombre_agujero_vacio_imagen = "img/copa1.gif";
+                     agujero_vacio_imagen.src = nombre_agujero_vacio_imagen; //Imagen del agujero vacio.
+                     var agujero_lleno_imagen = new Image(celda_width, celda_height);
+                     nombre_agujero_lleno_imagen = "img/copa2.gif"
+                     agujero_lleno_imagen.src = nombre_agujero_lleno_imagen; //Imagen del agujero lleno.
+                     var pieza_imagen = new Image(celda_width, celda_height);
+                     nombre_pieza_imagen = "img/botella.gif";
+                     pieza_imagen.src = nombre_pieza_imagen; //Imagen de la pieza.
+                     var borrar_imagen = new Image(celda_width, celda_height);
+                     nombre_borrar_imagen = "img/borrar.gif";
+                     borrar_imagen.src = nombre_borrar_imagen; //Imagen de borrar.
+                 }
+                
+
+             
+                function iniciar_editor()
+                 {
+                     //Se aplican las imagenes al menu:
+                     document.getElementById("imagen_personaje").src = personaje_imagen.src;
+                     document.getElementById("imagen_personaje_copa").src = personaje_copa_imagen.src;
+                     document.getElementById("imagen_pared").src = pared_imagen.src;
+                     document.getElementById("imagen_agujero_vacio").src = agujero_vacio_imagen.src;
+                     document.getElementById("imagen_agujero_lleno").src = agujero_lleno_imagen.src;
+                     document.getElementById("imagen_pieza").src = pieza_imagen.src;
+                     document.getElementById("imagen_borrar").src = borrar_imagen.src;
+
+                  
+                     preparar_mapa();
+                 }
+
+
+              
+                function marcar_div(nombre_div)
+                 {
+                   
+                      if (opcion_seleccionada != nombre_div) { document.getElementById(nombre_div).style.border = "2px dotted #000000"; } 
+                 }
+                     
+
+                 
+                 function desmarcar_div(nombre_div)
+                  {
+                    
+                      if (opcion_seleccionada != nombre_div) { document.getElementById(nombre_div).style.border = ""; } //Le quita el borde al div.
+                  }
+                  
+
+              
+                function seleccionar_div(nombre_div)
+                 {
+                    
+                      if (opcion_seleccionada != "") { document.getElementById(opcion_seleccionada).style.border = ""; }
+                    
+                      document.getElementById(nombre_div).style.border = "3px dotted #ff0000"; //Le pone al div el borde definido.
+                      
+                      opcion_seleccionada = nombre_div;
+                 }
+                
+
+                
+                function preparar_mapa()
+                 {
+                  
+                    document.getElementById("mapa").innerHTML = "";
+                    
+                 
+                    document.getElementById("mapa").style.width = celda_width * mapa_width + 6 + "px";
+                    document.getElementById("mapa").style.height = celda_height * mapa_height + 6 + "px";
+                    
+                  
+                    document.getElementById("formulario_size").mapa_x.value = mapa_width;
+                    document.getElementById("formulario_size").mapa_y.value = mapa_height;
+                    
+                   
+                    var contador_columnas = 0;
+                    var contador_filas = 0;
+                    var celda_bg = "";
+                    var mapa_temporal = ""; //Variable donde se guardara el mapa temporal, para ir poniendo los DIV.
+                    for (x=0; x<mapa_width*mapa_height; x++)
+                     {
+                        celda_bg = (celda_bg == "#ffffff") ? "#f5f5f5" : "#ffffff";
+                        var celda_left = contador_columnas * celda_width;
+                        var celda_top = contador_filas * celda_height;
+                       
+                        mapa_temporal += '<div id="celda_'+x+'" style="background:'+celda_bg+'; color:#bbbbbb; left:'+celda_left+'px; top:'+celda_top+'px; width:'+celda_width+'px; height:'+celda_height+'px; position:absolute; text-align:center; font-family:verdana; font-size:12px; line-height:20px; padding:0px; z-index:2;">'+x+'</div>';
+                        
+				mapa_temporal += '<div id="celda_'+x+'_provisional" style="background:url(\'img/blank.gif\'); color:#bbbbbb; left:'+celda_left+'px; top:'+celda_top+'px; width:'+celda_width+'px; height:'+celda_height+'px; position:absolute; text-align:center; font-family:verdana; font-size:12px; line-height:20px; padding:0px; z-index:3;"><img src="img/blank.gif" width="'+celda_width+'" height="'+celda_height+'" hspace="0" vspace="0"></div>';
+                       
+                        mapa_temporal += '<div id="celda_'+x+'_eventos" style="background:url(\'img/blank.gif\'); color:#bbbbbb; left:'+celda_left+'px; top:'+celda_top+'px; width:'+celda_width+'px; height:'+celda_height+'px; position:absolute; text-align:center; font-family:verdana; font-size:12px; line-height:20px; padding:0px; z-index:4;" onMouseDown="javascript:pintar_celda(event, \'celda_'+x+'\');" onMouseOver="javascript:posicionar_celda(\'celda_'+x+'\');" onMouseOut="javascript:desposicionar_celda(\'celda_'+x+'\');" onContextMenu="javascript:return false;"><img src="img/blank.gif" width="'+celda_width+'" height="'+celda_height+'" hspace="0" vspace="0"></div>';
+                        contador_columnas++;
+                        celdas_pintadas["celda_"+x] = " ";
+                        if (contador_columnas >= mapa_width) { contador_filas++; contador_columnas = 0; celda_bg = (celda_bg == "#ffffff") ? "#dddddd" : "#ffffff"; }
+                     }
+
+                    
+                    document.getElementById("mapa").innerHTML = mapa_temporal;
+
+                   
+                    actualizar_mapa_codigo();
+
+                    
+                    document.getElementById('mensaje_espera').style.visibility='hidden';
+                 }
+
+
+                
+                function resizear_mapa()
+                 {
+                    
+                    if (!confirm("Press ok if you want to change map capacity (and lost it actual map)"))
+                     {
+                        document.getElementById('mensaje_espera').style.visibility='hidden';
+                        document.getElementById("formulario_size").mapa_x.value = mapa_width_anterior;
+                        document.getElementById("formulario_size").mapa_y.value = mapa_height_anterior;
+                        return;
+                     }
+
+                    
+                    if (parseInt(document.getElementById("formulario_size").mapa_x.value) < 1 || isNaN(parseInt(document.getElementById("formulario_size").mapa_x.value)) || isNaN(parseInt(document.getElementById("formulario_size").mapa_y.value)))
+                     {
+                        //alert("Debes escribir un valor numerico"); //este alert da error en Firefox 1.0.3! xD
+                        document.getElementById('mensaje_espera').style.visibility='hidden';
+                        document.getElementById("formulario_size").mapa_x.value = mapa_width_anterior;
+                        document.getElementById("formulario_size").mapa_y.value = mapa_height_anterior;
+                        return;
+                     }
+
+                    
+                    mapa_width = document.getElementById("formulario_size").mapa_x.value;
+                    mapa_height = document.getElementById("formulario_size").mapa_y.value;
+
+                   
+                    mapa_width_anterior = mapa_width;
+                    mapa_height_anterior = mapa_height;
+                    
+              
+                    preparar_mapa();
+                 }
+
+
+               
+                function posicionar_celda(nombre_celda)
+                 {
+                 
+                    if (opcion_seleccionada == "") { return; }
+
+                   
+                    document.getElementById(nombre_celda+"_provisional").innerHTML = document.getElementById(opcion_seleccionada).innerHTML;
+                 }
+                 
+
+             
+                function desposicionar_celda(nombre_celda)
+                 {
+               
+                    if (opcion_seleccionada == "") { return; }
+                    
+                  
+                    document.getElementById(nombre_celda+"_provisional").innerHTML = '<img src="img/blank.gif" width="'+celda_width+'" height="'+celda_height+'" hspace="0" vspace="0">';
+                 }
+
+
+               
+                function pintar_celda(e, nombre_celda)
+                 {
+                    
+                    if (e != 0)
+                     {
+                      
+                        var boton_raton = (e.which) ? e.which : event.button;                     
+                      
+                        if (boton_raton == 2 || boton_raton == 3) { borrar_celda(nombre_celda); return; }
+                     }
+
+                  
+                    if (opcion_seleccionada == "") { alert("You must select an option on the menu of above for paint."); return; }
+                    
+                
+                    if (opcion_seleccionada != "div_borrar") { document.getElementById(nombre_celda).innerHTML = document.getElementById(opcion_seleccionada).innerHTML; }
+                   
+                    else { var numero_celda_borrar = nombre_celda.substring(6, nombre_celda.length); document.getElementById(nombre_celda).innerHTML = numero_celda_borrar; }
+
+                   
+                    if (opcion_seleccionada == "div_personaje") { celdas_pintadas[nombre_celda] = "@"; }
+                    else if (opcion_seleccionada == "div_personaje_copa") { celdas_pintadas[nombre_celda] = "+"; }
+                    else if (opcion_seleccionada == "div_pared") { celdas_pintadas[nombre_celda] = "#"; }
+                    else if (opcion_seleccionada == "div_agujero_vacio") { celdas_pintadas[nombre_celda] = "·"; }
+                    else if (opcion_seleccionada == "div_agujero_lleno") { celdas_pintadas[nombre_celda] = "*"; }
+                    else if (opcion_seleccionada == "div_pieza") { celdas_pintadas[nombre_celda] = "$"; }
+                    else { celdas_pintadas[nombre_celda] = " "; }
+
+                    
+                    actualizar_mapa_codigo();
+                 }
+
+
+                
+                function borrar_celda(nombre_celda)
+                 {
+                    
+                    var opcion_anterior = opcion_seleccionada;
+                    
+                    opcion_seleccionada = "div_borrar";
+                   
+                    pintar_celda(0, nombre_celda);
+                   
+                    opcion_seleccionada = opcion_anterior;
+                 }
+
+
+               
+                function recoger_mapa_url()
+                 {
+                   
+                  
+                    var url = window.location.href;
+
+                   
+                    if (url == "") { return; }
+
+                   
+                    var mapa_url_sucio = url.substring(url.indexOf("?")+1, url.length);
+                    var mapa_url = mapa_url_sucio.substring(mapa_url_sucio.indexOf("=")+1, mapa_url_sucio.indexOf("&width="));
+    
+                   
+                    var mapa_width_url_sucio = mapa_url_sucio.substring(mapa_url_sucio.indexOf("&")+1, mapa_url_sucio.indexOf("&height="));
+                    var mapa_width_url = mapa_width_url_sucio.substring(mapa_width_url_sucio.indexOf("=")+1, mapa_url_sucio.indexOf("&height="));
+
+                   
+                    var mapa_height_url_sucio = mapa_url_sucio.substring(mapa_url_sucio.indexOf("&height=")+1, mapa_url_sucio.length);
+                    var mapa_height_url = mapa_height_url_sucio.substring(mapa_height_url_sucio.indexOf("=")+1, mapa_height_url_sucio.length);
+
+                    
+                    if (mapa_url == "" || mapa_width_url == "" || mapa_height_url == "" || isNaN(mapa_width_url) || isNaN(mapa_height_url)) { return; }
+                    
+                    else
+                     {
+                          
+                            mapa_width = parseInt(unescape(mapa_width_url));
+                    
+                            mapa_height = parseInt(unescape(mapa_height_url));
+                            
+                           
+                            var mapa_url_refinado = unescape(mapa_url);
+                            // A => (espacio en blanco)
+                            // B => #
+                            // C => @
+                            // D => $
+                            // E => ·
+                            // F => *
+                            // G => +
+                            
+                            
+                            if (mapa_url_refinado.length != mapa_width*mapa_height) { alert("Failed to load map send by url because width and height are erroneous."); mapa_width = 10; mapa_height = 10; preparar_mapa(); return; }
+                            
+                           
+                            for (x=0; x<=mapa_url_refinado.length; x++) { mapa_url_refinado = mapa_url_refinado.replace("#", ""); }
+                            
+                           
+                            for (x=0; x<=mapa_url_refinado.length; x++)
+                             {
+                                mapa_url_refinado = mapa_url_refinado.replace("A", " ");
+                                mapa_url_refinado = mapa_url_refinado.replace("B", "#");
+                                mapa_url_refinado = mapa_url_refinado.replace("C", "@");
+                                mapa_url_refinado = mapa_url_refinado.replace("D", "$");
+                                mapa_url_refinado = mapa_url_refinado.replace("E", "·");
+                                mapa_url_refinado = mapa_url_refinado.replace("F", "*");
+                                mapa_url_refinado = mapa_url_refinado.replace("G", "+");
+                             }
+
+                           
+                            preparar_mapa();
+
+                           
+                            var contador_indice = 0;
+                            var div_actual = "";
+                            for (y=0; y<mapa_url_refinado.length; y++)
+                             {
+                                if (mapa_url_refinado.substring(y,y+1) == "#") { div_actual = "div_pared"; }
+                                else if (mapa_url_refinado.substring(y,y+1) == "@") { div_actual = "div_personaje"; }
+                                else if (mapa_url_refinado.substring(y,y+1) == "+") { div_actual = "div_personaje_copa"; }
+                                else if (mapa_url_refinado.substring(y,y+1) == "·") { div_actual = "div_agujero_vacio"; }
+                                else if (mapa_url_refinado.substring(y,y+1) == "*") { div_actual = "div_agujero_lleno"; }
+                                else if (mapa_url_refinado.substring(y,y+1) == "$") { div_actual = "div_pieza"; }
+
+                                celdas_pintadas["celda_"+contador_indice] = mapa_url_refinado.substring(y,y+1);
+
+                                if (div_actual != "" && mapa_url_refinado.substring(y,y+1) != " ") { document.getElementById("celda_"+contador_indice).innerHTML = document.getElementById(div_actual).innerHTML; }
+                                
+                                actualizar_mapa_codigo();
+
+                                contador_indice++;
+                                div_actual = "";
+                             }                   
+                            
+                     }
+                    
+                 }
+
+
+               
+                function actualizar_mapa_codigo()
+                 {
+                    mapa_codigo = "";
+                    var mapa_codigo_refinado = "";
+                    for (x=0; x<mapa_width*mapa_height; x++)
+                     {
+                        if (celdas_pintadas["celda_"+x] == " ") { mapa_codigo += "&nbsp;"; mapa_codigo_refinado += "A"; }
+                        else if (celdas_pintadas["celda_"+x] == "@") { mapa_codigo += "@"; mapa_codigo_refinado += "C"; }
+                        else if (celdas_pintadas["celda_"+x] == "#") { mapa_codigo += "#"; mapa_codigo_refinado += "B"; }
+                        else if (celdas_pintadas["celda_"+x] == "·") { mapa_codigo += "·"; mapa_codigo_refinado += "E"; }
+                        else if (celdas_pintadas["celda_"+x] == "*") { mapa_codigo += "*"; mapa_codigo_refinado += "F"; }
+                        else if (celdas_pintadas["celda_"+x] == "$") { mapa_codigo += "$"; mapa_codigo_refinado += "D"; }
+                        else if (celdas_pintadas["celda_"+x] == "+") { mapa_codigo += "+"; mapa_codigo_refinado += "G"; }
+                        else { mapa_codigo += "&nbsp;"; mapa_codigo_refinado += "A"; }
+                     }
+            
+                    document.getElementById("mapa_codigo").style.top = mapa_height * celda_height + parseInt(document.getElementById("mapa").style.top) + parseInt(celda_height/2) + "px";
+                    document.getElementById("mapa_codigo").innerHTML = '&nbsp; <font size="1" face="arial">//(c) Level editor </font><br>&nbsp; niveles[0] = new Array(); &nbsp;<br>&nbsp; niveles[0]["forma"] = "'+mapa_codigo+'"; &nbsp;<br>&nbsp; niveles[0]["width"] = '+mapa_width+'; &nbsp;<br>&nbsp; niveles[0]["height"] = '+mapa_height+'; &nbsp;';
+
+                    
+                    var url_probar = 'index.htm?mapa='+escape(mapa_codigo_refinado)+'&width='+escape(mapa_width)+'&height='+escape(mapa_height);
+                    document.getElementById("probar_juego").innerHTML = '[ <a href="javascript:vaciar_mapa();" style="color:#ff0000;">Clear map</a> - <a href="javascript:probar_mapa(\''+url_probar+'\');" style="color:#ff0000;">Play map</a> ]';
+                 }
+
+
+               
+                function probar_mapa(url_probar)
+                 {
+                   
+                    var probar_mapa_errores = false;
+                   
+                    var probar_mapa_errores_texto = "";
+                    
+                    
+                    var contador_agujeros = 0;
+                    var contador_piezas = 0;
+                    var contador_personajes = 0;
+
+                    for (x=0; x<mapa_width*mapa_height; x++)
+                     {
+                        if (celdas_pintadas["celda_"+x] == "@") { contador_personajes++; } //Se ha encontrado un personaje.
+                        if (celdas_pintadas["celda_"+x] == "+") { contador_personajes++; contador_agujeros++; } //Se ha encontrado un personaje+copa.
+                        if (celdas_pintadas["celda_"+x] == "$") { contador_piezas++; } //Se ha encontrado una pieza (botella).
+                        if (celdas_pintadas["celda_"+x] == "·") { contador_agujeros++; } //Se ha encontrado un agujero (copa vacia).
+                     }
+                    
+                   
+                    if (contador_personajes > 1) { probar_mapa_errores_texto += "\n* Exists more than one personage."; probar_mapa_errores = true; }
+                    
+                    
+                    if (contador_piezas > contador_agujeros) { probar_mapa_errores_texto += "\n* The number of pieces (bottles) is greater than the number of holes (empty glasses)."; probar_mapa_errores = true; }
+                    
+                   
+                    if (contador_personajes <= 0) { probar_mapa_errores_texto += "\n* There is no personage."; probar_mapa_errores = true; }
+                    if (contador_piezas <= 0) { probar_mapa_errores_texto += "\n* There is no pieces (bottles), it needs at least one."; probar_mapa_errores = true; }
+                    if (contador_agujeros <= 0) { probar_mapa_errores_texto += "\n* There is no holes (empty glasses), it needs at least one."; probar_mapa_errores = true; }
+                    
+                    
+                    if (probar_mapa_errores) { alert("Impossible to play map because:"+probar_mapa_errores_texto); return; }
+                    
+                   
+                    if (confirm('Press ok to play actual map')) { window.location = url_probar; }
+                 }
+
+
+              
+                function vaciar_mapa()
+                 {
+                    
+                    if (!confirm("Press ok if you want to clear actual map")) { return; }
+                   
+                    document.getElementById('mensaje_espera').style.visibility='visible';
+                    setTimeout("preparar_mapa(); document.getElementById('mensaje_espera').style.visibility='hidden';", 10);
+                 }
+
+            //-->
+        </script>
+    </head>
+    <body bgcolor="#ffffff" onLoad="javascript:document.getElementById('mensaje_espera').style.visibility='visible'; setTimeout('iniciar_editor(); recoger_mapa_url(); document.getElementById(\'mensaje_espera\').style.visibility=\'hidden\'', 10);">
+      
+        <div style="left:10px; top:30px; position:absolute; color:#000000; background:#ddaadd; font-weight:bold; font-family:arial; font-size:20px; padding:0px; z-index:30; visibility=visible; filter:alpha(opacity=70); opacity:0.7; -moz-opacity:0.7;" id="mensaje_espera">&nbsp; <i>Loading...</i> Please, wait. &nbsp;</div>
+        
+        <div style="left:10px; top:10px; width:240px; height:20px; position:absolute; font-weight:bold; font-family:verdana; font-size:14px;">
+            Choose an image:
+        </div>
+     
+        <div id="div_personaje" style="left:10px; top:40px; width:44px; height:40px; text-align:center; position:absolute;" onMouseOver="javascript:marcar_div('div_personaje');" onMouseOut="javascript:desmarcar_div('div_personaje');" onClick="javascript:seleccionar_div('div_personaje');">
+            <img src="img/yas_down1.gif" width="40" height="40" hspace="0" vspace="0" title="Click here to select" alt="personage" id="imagen_personaje">
+        </div>
+        <div id="div_personaje_copa" style="left:90px; top:40px; width:44px; height:40px; text-align:center; position:absolute;" onMouseOver="javascript:marcar_div('div_personaje_copa');" onMouseOut="javascript:desmarcar_div('div_personaje_copa');" onClick="javascript:seleccionar_div('div_personaje_copa');">
+            <img src="img/yas_copa_editor.gif" width="40" height="40" hspace="0" vspace="0" title="Click here to select" alt="personage over empty glass (empty hole)" id="imagen_personaje_copa">
+        </div>
+        <div id="div_pared" style="left:170px; top:40px; width:44px; height:40px; text-align:center; position:absolute;" onMouseOver="javascript:marcar_div('div_pared');" onMouseOut="javascript:desmarcar_div('div_pared');" onClick="javascript:seleccionar_div('div_pared');">
+            <img src="img/piedra1.gif" width="40" height="40" hspace="0" vspace="0" title="Click here to select" alt="stone (brick)" id="imagen_pared">
+        </div>
+        <div id="div_agujero_vacio" style="left:250px; top:40px; width:44px; height:40px; text-align:center; position:absolute;" onMouseOver="javascript:marcar_div('div_agujero_vacio');" onMouseOut="javascript:desmarcar_div('div_agujero_vacio');" onClick="javascript:seleccionar_div('div_agujero_vacio');">
+            <img src="img/copa1.gif" width="40" height="40" hspace="0" vspace="0" title="Click here to select" alt="empty glass (empty hole)" id="imagen_agujero_vacio">
+        </div>
+        <div id="div_agujero_lleno" style="left:330px; top:40px; width:44px; height:40px; text-align:center; position:absolute;" onMouseOver="javascript:marcar_div('div_agujero_lleno');" onMouseOut="javascript:desmarcar_div('div_agujero_lleno');" onClick="javascript:seleccionar_div('div_agujero_lleno');">
+            <img src="img/copa2.gif" width="40" height="40" hspace="0" vspace="0" title="Click here to select" alt="full glass (full hole)" id="imagen_agujero_lleno">
+        </div>
+        <div id="div_pieza" style="left:410px; top:40px; width:44px; height:40px; text-align:center; position:absolute;" onMouseOver="javascript:marcar_div('div_pieza');" onMouseOut="javascript:desmarcar_div('div_pieza');" onClick="javascript:seleccionar_div('div_pieza');">
+            <img src="img/botella.gif" width="40" height="40" hspace="0" vspace="0" title="Click here to select" alt="bottle (piece)" id="imagen_pieza">
+        </div>
+        <div id="div_borrar" style="left:490px; top:40px; width:44px; height:40px; text-align:center; position:absolute;" onMouseOver="javascript:marcar_div('div_borrar');" onMouseOut="javascript:desmarcar_div('div_borrar');" onClick="javascript:seleccionar_div('div_borrar');">
+            <img src="img/borrar.gif" width="40" height="40" hspace="0" vspace="0" title="Click here to select" alt="delete (eraser)" id="imagen_borrar">
+        </div>
+        <!-- Formulario para resizear: -->
+        <div id="menu_size" style="left:570px; top:45px; width:340px; height:40px; position:absolute; font-weight:bold; font-family:verdana; font-size:14px;">
+            <form style="display:inline;" id="formulario_size">
+                X: <input type="text" name="mapa_x" value="10" size="2" maxlength="2" title="Type here map width and press 'Apply'" onChange="document.getElementById('mensaje_espera').style.visibility='visible'; setTimeout('resizear_mapa();',200);">
+                <br>
+                Y: <input type="text" name="mapa_y" value="10" size="2" maxlength="2" title="Type here map height and press 'Apply'" onChange="document.getElementById('mensaje_espera').style.visibility='visible'; setTimeout('resizear_mapa();',200);">
+                <input type="button" value="Apply" name="boton_aplicar" style="cursor: pointer; cursor: hand;">
+            </form>
+        </div>
+        <!-- Fin de Formulario para resizear. -->
+        <!-- Fin de Botones. -->
+        <div style="left:10px; top:90px; width:400px; height:400px; position:absolute; font-weight:bold; font-family:verdana; font-size:14px; padding:0px; z-index:1;">
+            Map: <div id="probar_juego" style="left:60px; top:2px; position:absolute; font-weight:normal; font-family:arial; font-size:12px; padding:0px; z-index:69;">[ <a href="" style="color:#ff0000;">Clear map</a> - <a href="" style="color:#ff0000;">Play map</a> ]</div>
+        </div>
+        <!-- Mapa: -->
+        <div id="mapa" style="left:10px; top:110px; width:400px; height:400px; position:absolute; border:2px dashed #000000;">
+        </div>
+        <!-- Fin de Mapa. -->
+        <!-- Codigo del Mapa: -->
+        <div id="mapa_codigo" style="background:#dddddd; color:#550000; left:10px; top:510px; position:absolute; border:0px; font-weight:bold; font-family:courier; letter-spacing:0px; word-spacing:0px; font-size:12px; line-height:20px; text-align:left;">
+        </div>
+        <!-- Fin de Codigo del Mapa. -->
+    </body>
+</html>

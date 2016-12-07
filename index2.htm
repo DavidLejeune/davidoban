@@ -1,0 +1,1112 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+    <head>
+        <title>Davidoban &copy; (by David L.Young)</title>
+<SCRIPT LANGUAGE="JavaScript1.1">
+function right(e) {
+if (navigator.appName == 'Netscape' && 
+(e.which == 3 || e.which == 2))
+return false;
+else if (navigator.appName == 'Microsoft Internet Explorer' && 
+(event.button == 2 || event.button == 3)) {
+alert("Close but no cigar ... deze site is tegen kopiëren beveiligd! Voor vragen stuur gerust een mail naar DAvid.Lejeune@republiek-vlaanderen.eu");
+return false;
+}
+return true;
+}
+
+
+document.onmousedown=right;
+document.onmouseup=right;
+if (document.layers) window.captureEvents(Event.MOUSEDOWN);
+if (document.layers) window.captureEvents(Event.MOUSEUP);
+window.onmousedown=right;
+window.onmouseup=right;
+//  End -->
+</script>
+        <script language="JavaScript1.2" type="text/javascript">
+            <!--
+
+
+                var primer_evento = "";
+                
+
+                var niveles = new Array();
+                
+
+                var celda_width = 40;
+                
+
+                var celda_height = 40;
+    
+
+                var numero_piezas_totales = 0;
+
+                var numero_piezas_colocadas = 0;
+
+
+                var nivel = 1;
+                
+
+                var numero_niveles = 0;
+                
+
+                var movimientos_anteriores = new Array();
+
+                var numero_movimientos = 0;
+
+                var numero_movimientos_mostrar = numero_movimientos;
+                
+
+                var movimiento_personaje = setTimeout("", 1); //Se setea para que no de error el primer clearTimeout.
+                
+ 
+                var mapa_url_recogido = false;
+
+
+                var url_editor = "edito.htm";
+                
+                var se_ha_saludado = false;
+                
+
+                var juego_iniciado = false;
+                
+
+                if (document.images)
+                 {
+                    //Se crean los objetos:
+                    var img_pared1 = new Image(celda_width, celda_height);
+                    var img_pared2 = new Image(celda_width, celda_height);
+                    var img_pared3 = new Image(celda_width, celda_height);
+                    var img_pieza = new Image(celda_width, celda_height);
+                    var img_agujero_vacio = new Image(celda_width, celda_height);
+                    var img_agujero_lleno = new Image(celda_width, celda_height);
+                    var img_personaje_derecha1 = new Image(celda_width, celda_height);
+                    var img_personaje_derecha2 = new Image(celda_width, celda_height);
+                    var img_personaje_izquierda1 = new Image(celda_width, celda_height);
+                    var img_personaje_izquierda2 = new Image(celda_width, celda_height);
+                    var img_personaje_arriba1 = new Image(celda_width, celda_height);
+                    var img_personaje_arriba2 = new Image(celda_width, celda_height);
+                    var img_personaje_abajo1 = new Image(celda_width, celda_height);
+                    var img_personaje_abajo2 = new Image(celda_width, celda_height);
+
+                    var numero_img_paredes = 3;
+
+                    img_pared1.src = "img/piedra1.gif"; //Imagen de la pared #1.
+                    img_pared2.src = "img/piedra2.gif"; //Imagen de la pared #2.
+                    img_pared3.src = "img/piedra3.gif"; //Imagen de la pared #3.
+                    img_pieza.src = "img/botella.gif"; //Imagen de la pieza.
+                    img_agujero_vacio.src = "img/copa1.gif"; //Imagen del agujero vacio.
+                    img_agujero_lleno.src = "img/copa2.gif"; //Imagen del agujero lleno.
+                    img_personaje_derecha1.src = "img/yas_right1.gif"; //Imagen del personaje hacia la derecha #1.
+                    img_personaje_derecha2.src = "img/yas_right2.gif"; //Imagen del personaje hacia la derecha #2.
+                    img_personaje_izquierda1.src = "img/yas_left1.gif"; //Imagen del personaje hacia la izquierda #1.
+                    img_personaje_izquierda2.src = "img/yas_left2.gif"; //Imagen del personaje hacia la izquierda #2.
+                    img_personaje_arriba1.src = "img/yas_up1.gif"; //Imagen del personaje hacia arriba #1.
+                    img_personaje_arriba2.src = "img/yas_up2.gif"; //Imagen del personaje hacia arriba #2.
+                    img_personaje_abajo1.src = "img/yas_down1.gif"; //Imagen del personaje hacia abajo #1.
+                    img_personaje_abajo2.src = "img/yas_down2.gif"; //Imagen del personaje hacia abajo #2.
+
+                    var imagen_personaje = new Image(celda_width, celda_height);
+                    imagen_personaje.src = img_personaje_abajo1.src;
+                 }
+    
+                
+
+                function iniciar_juego(numero_nivel)
+                 {
+                    //Genera los niveles:
+                    generar_niveles();
+                    
+                    //Crea la url para ir al editor y poder editar el nivel actual:
+                    generar_url_editor(numero_nivel);
+                    
+                    //Se pone como imagen inicial del personaje la que mira hacia abajo:
+                    document.getElementById("personaje").innerHTML = '<img src="img/yas_down1.gif" id="personaje_imagen" title="You are here" alt="@" width="'+celda_width+'" height="'+celda_height+'" border="0" hspace="0" vspace="0">';
+                   
+
+                    movimientos_anteriores = new Array();
+                    numero_movimientos = 0;
+                    numero_movimientos_mostrar = numero_movimientos;
+
+
+                    nivel = numero_nivel;
+
+
+                    if (niveles[nivel]["width"] > 48 || niveles[nivel]["height"] > 30) { celda_width = 10; celda_height = 10; }
+                    else if (niveles[nivel]["width"] > 32 || niveles[nivel]["height"] > 24) { celda_width = 15; celda_height = 15; }
+                    else if (niveles[nivel]["width"] > 26 || niveles[nivel]["height"] > 18) { celda_width = 20; celda_height = 20; }
+                    else if (niveles[nivel]["width"] > 20 || niveles[nivel]["height"] > 12) { celda_width = 30; celda_height = 30; }
+                    else { celda_width = 40; celda_height = 40; }
+
+                    document.getElementById("personaje").style.width = celda_width + "px";
+                    document.getElementById("personaje").style.height = celda_height + "px";
+                    document.getElementById("personaje").innerHTML = '<img src="img/yas_down1.gif" id="personaje_imagen" title="You are here" alt="@" width="'+celda_width+'" height="'+celda_height+'" border="0" hspace="0" vspace="0">';
+
+
+                    numero_piezas_colocadas = 0;
+
+
+                    pintar_mapa(true);
+
+  
+                    guardar_mapa();
+
+
+                    actualizar_barra();
+
+
+                    document.getElementById("mensaje").innerHTML = "Welcome to Level: "+nivel;
+
+                    document.getElementById("mensaje").style.visibility = "visible";
+
+                    setTimeout("document.getElementById('mensaje').style.visibility='hidden'", 3000); 
+
+
+                    if (nivel <= 1 && !se_ha_saludado) { alert("Welcome to the first level. "); se_ha_saludado = true; }
+                 }
+                
+
+
+                function generar_niveles()
+                 {
+                    //Leyenda:
+                    //   => Vacio.
+                    // # => Pared (piedra).
+                    // @ => Posicion inicial del personaje (yasmina).
+                    // $ => Pieza (botella).
+                    // · => Agujero para la pieza (copa vacia).
+                    // * => Agujero con una pieza (copa llena).
+                    // + => Personaje encima de un agujero para la pieza (mezcla de @ con ·).
+
+                    //Nivel 1:
+                    niveles[1] = new Array();
+                    niveles[1]["forma"] = "    #####          " +
+                                          "    #   #          " +
+                                          "    #$  #          " +
+                                          "  ###  $##         " +
+                                          "  #  $ $ #         " +
+                                          "### # ## #   ######" +
+                                          "#   # ## #####  ··#" +
+                                          "# $  $          ··#" +
+                                          "##### ### #@##  ··#" +
+                                          "    #     #########" +
+                                          "    #######        "; //Mapa del nivel 1.
+                    niveles[1]["width"] = 19; //Columnas.
+                    niveles[1]["height"] = 11; //Filas.
+
+
+                    niveles[2] = new Array();
+                    niveles[2]["forma"] = "##########" +
+                                          "####   # #" +
+                                          "#· $ $·# #" +
+                                          "#· +$ ## #" +
+                                          "#$ $  $··#" +
+                                          "#  #######"; //Mapa del nivel 2.
+                    niveles[2]["width"] = 10; //Columnas.
+                    niveles[2]["height"] = 6; //Filas.
+
+
+                    niveles[3] = new Array();
+                    niveles[3]["forma"] = "############  " +
+                                          "#··  #     ###" +
+                                          "#··  # $  $  #" +
+                                          "#··  #$####  #" +
+                                          "#··    @ ##  #" +
+                                          "#··  # #  $ ##" +
+                                          "###### ##$ $ #" +
+                                          "  # $  $ $ $ #" +
+                                          "  #    #     #" +
+                                          "  ############"; //Mapa del nivel 3.
+                    niveles[3]["width"] = 14; //Columnas.
+                    niveles[3]["height"] = 10; //Filas.
+
+
+                    niveles[4] = new Array();
+                    niveles[4]["forma"] = "##   #   #  ##" +
+                                          "#            #" +
+                                          "##### $@$ ####" +
+                                          "·   ##$$$##  ·" +
+                                          "#        #   #" +
+                                          "··   #      ··" +
+                                          "··  ##$$$ # ··" +
+                                          "##### $ $ ####" +
+                                          "##            " +
+                                          "###   #  #  ##"; //Mapa del nivel 4.
+                    niveles[4]["width"] = 14; //Columnas.
+                    niveles[4]["height"] = 10; //Filas.
+
+
+                    niveles[5] = new Array();
+                    niveles[5]["forma"] = "        ######## " +
+                                          "        #     @# " +
+                                          "        # $#$ ## " +
+                                          "        # $  $#  " +
+                                          "        ##$ $ #  " +
+                                          "######### $ # ###" +
+                                          "#····  ## $  $  #" +
+                                          "##···    $  $   #" +
+                                          "#····  ##########" +
+                                          "########         "; //Mapa del nivel 5.
+                    niveles[5]["width"] = 17; //Columnas.
+                    niveles[5]["height"] = 10; //Filas.
+
+                    //Nivel 6:
+                    niveles[6] = new Array();
+                    niveles[6]["forma"] = "# # # #     # # #" +
+                                          "   $      #      " +
+                                          "#        $  ·   #" +
+                                          " $ $ $ $  #$ # $ " +
+                                          " # # # # #·      " +
+                                          "  ·   ·   $# #·#·" +
+                                          "# $ $  #$#· $ $ $" +
+                                          " · ·  ·       ·  " +
+                                          "   #$#$#  $      " +
+                                          "#· · ·  #·#·#·#+#"; //Mapa del nivel 6.
+                    niveles[6]["width"] = 17; //Columnas.
+                    niveles[6]["height"] = 10; //Filas.
+
+   
+                    niveles[7] = new Array();
+                    niveles[7]["forma"] = "           ########" +
+                                          "           #  ····#" +
+                                          "############  ····#" +
+                                          "#    #  $ $   ····#" +
+                                          "# $$$#$  $ #  ····#" +
+                                          "#  $     $ #  ····#" +
+                                          "# $$ #$ $ $########" +
+                                          "#  $ #     #       " +
+                                          "## #########       " +
+                                          "#    #    ##       " +
+                                          "#     $   ##       " +
+                                          "#  $$#$$  @#       " +
+                                          "#    #    ##       " +
+                                          "###########        "; //Mapa del nivel 7.
+                    niveles[7]["width"] = 19; //Columnas.
+                    niveles[7]["height"] = 14; //Filas.
+
+                    niveles[8] = new Array();
+                    niveles[8]["forma"] = "#  ####  #### #### " +
+                                          "####··####··###··##" +
+                                          "+                  " +
+                                          "#  #  #  #  # #  ##" +
+                                          "#  #  #  #  # #   #" +
+                                          "#     #          ##" +
+                                          "#  #   #  #  #$$$ #" +
+                                          "#     $     #  #  #" +
+                                          "##### $   ###  #  #" +
+                                          "#    $$$ $  #  $$$#" +
+                                          "##  # #  #  #  #  #" +
+                                          "      #  #     #   " +
+                                          " ####·####··####··#" +
+                                          "##  ###  ####  ####"; //Mapa del nivel 8.
+                    niveles[8]["width"] = 19; //Columnas.
+                    niveles[8]["height"] = 14; //Filas.
+
+                    niveles[9] = new Array();
+                    niveles[9]["forma"] = "        #####    " +
+                                          "        #   #####" +
+                                          "        # #$##  #" +
+                                          "        #     $ #" +
+                                          "######### ###   #" +
+                                          "#····  ## $  $###" +
+                                          "#····    $ $$ ## " +
+                                          "#····  ##$  $ @# " +
+                                          "#########  $  ## " +
+                                          "        # $ $  # " +
+                                          "        ### ## # " +
+                                          "          #    # " +
+                                          "          ###### "; //Mapa del nivel 9.
+                    niveles[9]["width"] = 17; //Columnas.
+                    niveles[9]["height"] = 13; //Filas.
+
+                    niveles[10] = new Array();
+                    niveles[10]["forma"] = "################ " +
+                                           " + #·            " +
+                                           "  ##$#########   " +
+                                           "#             # #" +
+                                           "#  # #######  # #" +
+                                           "# $       · $ #$#" +
+                                           "# #  ###### # # #" +
+                                           "# # #  $ ·  #   #" +
+                                           "###  # ####$  # #" +
+                                           "# #           # #" +
+                                           "#  ##########·#  " +
+                                           "#··         $·$  " +
+                                           " ############### "; //Mapa del nivel 10.
+                    niveles[10]["width"] = 17; //Columnas.
+                    niveles[10]["height"] = 13; //Filas.
+
+                    niveles[11] = new Array();
+                    niveles[11]["forma"] = "######  ### " +
+                                           "#··  # ##@##" +
+                                           "#··  ###   #" +
+                                           "#··     $$ #" +
+                                           "#··  # # $ #" +
+                                           "#··### # $ #" +
+                                           "#### $ #$  #" +
+                                           "   #  $# $ #" +
+                                           "   # $  $  #" +
+                                           "   #  ##   #" +
+                                           "   #########"; //Mapa del nivel 11.
+                    niveles[11]["width"] = 12; //Columnas.
+                    niveles[11]["height"] = 11; //Filas.
+
+                    niveles[12] = new Array();
+                    niveles[12]["forma"] = "    #     ##" +
+                                           " ·· #$#$ #  " +
+                                           " #    #@ #· " +
+                                           " # · $$$ # #" +
+                                           "  #    ·#·$ " +
+                                           "  $  #  #·$ " +
+                                           "   ## · ##$ " +
+                                           "  # $  $ #  " +
+                                           "  #·    ·# $" +
+                                           "  #######   " +
+                                           "··       $ ·"; //Mapa del nivel 12.
+                    niveles[12]["width"] = 12; //Columnas.
+                    niveles[12]["height"] = 11; //Filas.
+
+                    niveles[13] = new Array();
+                    niveles[13]["forma"] = "       ##### " +
+                                           " #######   ##" +
+                                           "## # @## $$ #" +
+                                           "#    $      #" +
+                                           "#  $  ###   #" +
+                                           "### #####$###" +
+                                           "# $  ### ··# " +
+                                           "# $ $ $ ···# " +
+                                           "#    ###···# " +
+                                           "# $$ # #···# " +
+                                           "#  ### ##### " +
+                                           "####         "; //Mapa del nivel 13.
+                    niveles[13]["width"] = 13; //Columnas.
+                    niveles[13]["height"] = 12; //Filas.
+
+                    niveles[14] = new Array();
+                    niveles[14]["forma"] = "#   #   # ###" +
+                                           " # # # # #   " +
+                                           "· #  ·#· ·#  " +
+                                           "$ # $ # $ #  " +
+                                           " #  ·$   #·· " +
+                                           " $·  $+ $ $**" +
+                                           "   $· #$     " +
+                                           " # #   $ # $ " +
+                                           "  #·$$# $ #··" +
+                                           "  #   #  ·#$ " +
+                                           " # #·# #·##  " +
+                                           "#   #   #  ##"; //Mapa del nivel 14.
+                    niveles[14]["width"] = 13; //Columnas.
+                    niveles[14]["height"] = 12; //Filas.
+
+                    niveles[15] = new Array();
+                    niveles[15]["forma"] = "  ####          " +
+                                           "  #  ###########" +
+                                           "  #    $   $ $ #" +
+                                           "  # $# $ #  $  #" +
+                                           "  #  $ $  #    #" +
+                                           "### $# #  #### #" +
+                                           "#@#$ $ $  ##   #" +
+                                           "#    $ #$#   # #" +
+                                           "#   $    $ $ $ #" +
+                                           "#####  #########" +
+                                           "  #      #      " +
+                                           "  #      #      " +
+                                           "  #······#      " +
+                                           "  #······#      " +
+                                           "  #······#      " +
+                                           "  ########      "; //Mapa del nivel 15.
+                    niveles[15]["width"] = 16; //Columnas.
+                    niveles[15]["height"] = 16; //Filas.
+
+
+                    for (contador_nivel=1; contador_nivel<niveles.length; contador_nivel++)
+                     {
+                        for (contador=0; contador<niveles[contador_nivel]["forma"].length; contador++)
+                        {
+                            niveles[contador_nivel]["forma"] = niveles[contador_nivel]["forma"].replace(".", "·");
+                        }
+                     }
+                    
+
+                    numero_niveles = niveles.length - 1;
+                 }
+
+
+
+                function generar_url_editor(numero_nivel)
+                 {
+                    //Se crean las variables necesarias para forma la url:
+                    var pagina_generada = "editor.htm";
+                    var width_generado = niveles[numero_nivel]["width"];
+                    var height_generado = niveles[numero_nivel]["height"];
+                    var mapa_generado = niveles[numero_nivel]["forma"];
+                    
+                    //Se refina el mapa cambiando los caracteres para que sean admitidos por la url:
+                     // A => (espacio en blanco)
+                     // B => #
+                     // C => @
+                     // D => $
+                     // E => ·
+                     // F => *
+                     // G => +
+                    for (z=0; z<niveles[numero_nivel]["forma"].length; z++)
+                     {
+                            mapa_generado = mapa_generado.replace(" ", "A");
+                            mapa_generado = mapa_generado.replace("#", "B");
+                            mapa_generado = mapa_generado.replace("@", "C");
+                            mapa_generado = mapa_generado.replace("$", "D");
+                            mapa_generado = mapa_generado.replace("·", "E");
+                            mapa_generado = mapa_generado.replace("*", "F");
+                            mapa_generado = mapa_generado.replace("+", "G");
+                     }
+                    
+
+                    url_editor = pagina_generada + "?mapa="+escape(mapa_generado)+"&width="+width_generado+"&height="+height_generado;
+                 }
+                
+
+
+                function actualizar_barra()
+                 {
+
+                    var formulario_nivel = generar_formulario_nivel();
+
+                    if (!formulario_nivel) { document.getElementById("barra_estado").innerHTML = "Level: "+nivel+"&nbsp; |&nbsp; Movements: "+eval(numero_movimientos_mostrar); }
+                    else { document.getElementById("barra_estado").innerHTML = formulario_nivel; }
+                 }
+
+
+
+                function generar_formulario_nivel()
+                 {
+
+                    var formulario_nivel = '<form style="display:inline;" id="formulario_nivel">';
+
+                    formulario_nivel += 'Level: <select name="selector_nivel" onChange="javascript:saltar_nivel(document.getElementById(\'formulario_nivel\').selector_nivel.value);">';
+
+                    for (x=1; x<=numero_niveles; x++)
+                     {
+
+                        if (nivel == x) { formulario_nivel += '<option value="'+x+'" onFocus="javascript:iniciar_juego('+x+');" selected>'+x+'</option>'; }
+
+                        else { formulario_nivel += '<option value="'+x+'" onFocus="javascript:iniciar_juego('+x+');">'+x+'</option>'; }
+                     }
+
+                    formulario_nivel += '</select>';
+
+                    formulario_nivel += "&nbsp; |&nbsp; Movements: "+eval(numero_movimientos_mostrar)+"</form>";
+
+                    return formulario_nivel;
+                 }
+
+
+
+                function saltar_nivel(numero_nivel)
+                 {
+ 
+                    if (mapa_url_recogido && numero_nivel == numero_niveles) { recoger_mapa_url(); return; }
+                    
+
+                    if (confirm("Press ok if you want to change to level "+numero_nivel))
+                     {
+  
+                        iniciar_juego(numero_nivel);
+                     }
+
+                    else
+                     {
+                       
+                        actualizar_barra();
+                     }
+                 }
+
+
+                
+                function pintar_mapa(pintar_personaje)
+                 {
+                    
+                    if (pintar_personaje) { document.getElementById("personaje").innerHTML = '<img src="img/yas_down1.gif" id="personaje_imagen" title="You are here" alt="@" width="'+celda_width+'" height="'+celda_height+'" border="0" hspace="0" vspace="0">'; }
+                    
+         
+                    document.getElementById("mapa").style.visibility = "hidden";
+                    
+          
+                    document.getElementById("personaje").style.visibility = "hidden";
+
+       
+                    document.getElementById("mapa").innerHTML = "";
+                   
+      
+                    document.getElementById("mapa").style.width = niveles[nivel]["width"] * celda_width + "px";
+                    
+      
+                    document.getElementById("mapa").style.height = niveles[nivel]["height"] * celda_height + "px";
+                    
+          
+                    numero_piezas_totales = 0;
+                    
+             
+                    var numero_pared = 1;
+                    
+            
+                    var mapa_pintado = "";
+                    
+         
+                    var contador_columna = 0;
+
+       
+                    var contador_fila = 0;
+
+                                    
+                    for (x=0; x<niveles[nivel]["forma"].length; x++)
+                     {
+             
+                        var celda_left = contador_columna * celda_width;
+              
+                        var celda_top = contador_fila * celda_height;
+                        
+       
+                        if (niveles[nivel]["forma"].substring(x,x+1) == "#") { if (numero_pared >= numero_img_paredes) { numero_pared = 1; } numero_pared++; mapa_pintado += '<div id="'+x+'" style="visibility:visible; background:transparent; color:yellow; left:'+celda_left+'px; top:'+celda_top+'px; width:'+celda_width+'px; height:'+celda_height+'px; padding:0px; position:absolute; font-size:1px; line-height:1px;"><img src="'+eval('img_pared' + numero_pared + '.src')+'" width="'+celda_width+'" height="'+celda_height+'"></div>'; }
+                       
+                        else if (pintar_personaje && niveles[nivel]["forma"].substring(x,x+1) == "@") { mapa_pintado += '<div id="'+x+'" style="visibility:visible; background:transparent; color:#000000; left:'+celda_left+'px; top:'+celda_top+'px; width:'+celda_width+'px; height:'+celda_height+'px; padding:0px; position:absolute; font-size:1px; line-height:1px;">&nbsp;</div>'; document.getElementById("personaje").style.left = celda_left + "px"; document.getElementById("personaje").style.top = celda_top + "px"; }
+                  
+                        else if (niveles[nivel]["forma"].substring(x,x+1) == "$") { numero_piezas_totales++; mapa_pintado += '<div id="'+x+'" style="visibility:visible; background:transparent; color:#000000; left:'+celda_left+'px; top:'+celda_top+'px; width:'+celda_width+'px; height:'+celda_height+'px; padding:0px; position:absolute; font-size:1px; line-height:1px;"><img src="'+img_pieza.src+'" width="'+celda_width+'" height="'+celda_height+'"></div>'; }
+                      
+                        else if (niveles[nivel]["forma"].substring(x,x+1) == "·") { mapa_pintado += '<div id="'+x+'" style="visibility:visible; background:transparent; color:#000000; left:'+celda_left+'px; top:'+celda_top+'px; width:'+celda_width+'px; height:'+celda_height+'px; padding:0px; position:absolute; font-size:1px; line-height:1px;"><img src="'+img_agujero_vacio.src+'" width="'+celda_width+'" height="'+celda_height+'"></div>'; }
+                     
+                        else if (niveles[nivel]["forma"].substring(x,x+1) == "*") { mapa_pintado += '<div id="'+x+'" style="visibility:visible; background:transparent; color:#000000; left:'+celda_left+'px; top:'+celda_top+'px; width:'+celda_width+'px; height:'+celda_height+'px; padding:0px; position:absolute; font-size:1px; line-height:1px;"><img src="'+img_agujero_lleno.src+'" width="'+celda_width+'" height="'+celda_height+'"></div>'; }
+                       
+                        else if (pintar_personaje && niveles[nivel]["forma"].substring(x,x+1) == "+")
+                         {
+                        
+                            document.getElementById("personaje").style.left = celda_left + "px";
+                            document.getElementById("personaje").style.top = celda_top + "px";
+                     
+                            mapa_pintado += '<div id="'+x+'" style="visibility:visible; background:transparent; color:#000000; left:'+celda_left+'px; top:'+celda_top+'px; width:'+celda_width+'px; height:'+celda_height+'px; padding:0px; position:absolute; font-size:1px; line-height:1px;"><img src="'+img_agujero_vacio.src+'" width="'+celda_width+'" height="'+celda_height+'"></div>';
+                            //Substituye el "+" del mapa por un agujero vacio normal (·):
+                            niveles[nivel]["forma"] = niveles[nivel]["forma"].replace("+", "·");
+                        
+                         }
+
+                        else
+                         {
+                            mapa_pintado += '<div id="'+x+'" style="visibility:visible; background:transparent; color:#000000; left:'+celda_left+'px; top:'+celda_top+'px; width:'+celda_width+'px; height:'+celda_height+'px; padding:0px; position:absolute; font-size:1px; line-height:1px;">&nbsp;</div>';
+                         }
+                        
+  
+                        contador_columna++;
+                       
+                        if (contador_columna >= niveles[nivel]["width"]) { contador_columna = 0; contador_fila++; }
+                     }
+                    
+                   
+                    document.getElementById("informacion_autor").style.top = parseInt(document.getElementById("zona_juego").style.top) + (niveles[nivel]["height"] * celda_height) + parseInt(celda_height/2) + "px";
+                    
+              
+                    document.getElementById("mapa").innerHTML += mapa_pintado;
+                     
+              
+                    document.getElementById("personaje").style.visibility = "visible";
+
+          
+                    document.getElementById("mapa").style.visibility = "visible";
+                 }
+
+
+         
+                function pasar_nivel()
+                 {
+                    //Si aun no estamos en el ultimo nivel, se pasa de nivel:
+                    if (nivel < numero_niveles)
+                     {
+                        //Se informa del fin del juego en el mensaje:
+                        document.getElementById("mensaje").innerHTML = "Congratulations, you finished the level "+nivel;
+                        //Se hace visible el mensaje:
+                        document.getElementById("mensaje").style.visibility = "visible";
+                        //Se oculta el mensaje despues de 3 segundos:
+                        setTimeout("document.getElementById('mensaje').style.visibility='hidden'", 3000); 
+                        //Se da la enhorabuena con un alert:
+                        alert("Congratulations, you finished the level "+nivel);
+                        //Se incrementa un nivel:
+                        nivel++;
+
+                       
+                        if (mapa_url_recogido && nivel == numero_niveles) { recoger_mapa_url(); return; }
+
+                        //Se inicia el juego con el siguiente nivel:
+                        iniciar_juego(nivel);
+                     }
+                   
+                    else
+                     {
+                        //Se informa del fin del juego en el mensaje:
+                        document.getElementById("mensaje").innerHTML = "You finished all levels. End of game.";
+                        //Se hace visible el mensaje:
+                        document.getElementById("mensaje").style.visibility = "visible";
+                        //Se oculta el mensaje despues de 3 segundos:
+                        setTimeout("document.getElementById('mensaje').style.visibility='hidden'", 3000); 
+                        //Se alerta de que se han acabado los niveles:
+                        alert("You finished all levels. End of game.");
+                        //Se vuelve a iniciar el juego por el primer nivel:
+                        iniciar_juego(1);
+                     }
+                 }
+                
+
+   
+                function reiniciar_nivel()
+                 {
+                   
+                    if (confirm("Press ok to restart level "+nivel))
+                     {
+                       
+                        if (mapa_url_recogido && nivel == numero_niveles) { recoger_mapa_url(); return; }
+                        //Vuelve a iniciar el juego en el nivel actual:
+                        iniciar_juego(nivel);
+                     }
+                 }
+
+
+              
+                function guardar_mapa()
+                 {
+                    //Se crea la matriz multidimensional, por si antes no existia:
+                    movimientos_anteriores[numero_movimientos] = new Array();
+                    //Se guarda el mapa en la matriz para movimientos anteriores:
+                    movimientos_anteriores[numero_movimientos]["mapa_forma"] = niveles[nivel]["forma"]; //Se guarda el mapa.
+                    movimientos_anteriores[numero_movimientos]["personaje_left"] = document.getElementById("personaje").style.left; //Se guarda la posicion horizontal del personaje.
+                    movimientos_anteriores[numero_movimientos]["personaje_top"] = document.getElementById("personaje").style.top; //Se guarda la posicion vertical del personaje.
+                    movimientos_anteriores[numero_movimientos]["personaje_imagen"] = imagen_personaje.src; //Se guarda la posicion vertical del personaje.
+                 }
+
+
+              
+                function deshacer_accion()
+                 {
+                    
+                     if (numero_movimientos-1 >= 0)
+                      {
+                       
+                        if (numero_movimientos == movimientos_anteriores.length && numero_movimientos > 2) { numero_movimientos--; } //Esto es porque el ultimo movimiento guardado es el actual, y entonces se tendria que deshacer dos veces.
+                        
+                        numero_movimientos--;
+                       
+                        niveles[nivel]["forma"] = movimientos_anteriores[numero_movimientos]["mapa_forma"];
+                        
+                        document.getElementById("personaje").style.left = movimientos_anteriores[numero_movimientos]["personaje_left"];
+                        
+                        document.getElementById("personaje").style.top = movimientos_anteriores[numero_movimientos]["personaje_top"];
+                       
+                        document.getElementById('personaje_imagen').src = movimientos_anteriores[numero_movimientos]["personaje_imagen"];
+                       
+                        pintar_mapa(false);
+                      
+                        numero_movimientos_mostrar--;
+                      
+                        actualizar_barra();
+                      }
+                 }
+
+
+              
+                function rehacer_accion()
+                 {
+                     
+                     if (movimientos_anteriores.length > 0 && numero_movimientos+1 < movimientos_anteriores.length)
+                      {
+                        
+                        //if (numero_movimientos == movimientos_anteriores.length-1 && numero_movimientos > 1) { numero_movimientos++; } //Esto es porque el ultimo movimiento guardado es el actual, y entonces saltaria dos casillas al rehacer.
+                        
+                        numero_movimientos++;
+                      
+                        niveles[nivel]["forma"] = movimientos_anteriores[numero_movimientos]["mapa_forma"];
+                        
+                        document.getElementById("personaje").style.left = movimientos_anteriores[numero_movimientos]["personaje_left"];
+                       
+                        document.getElementById("personaje").style.top = movimientos_anteriores[numero_movimientos]["personaje_top"];
+                       
+                        document.getElementById('personaje_imagen').src = movimientos_anteriores[numero_movimientos]["personaje_imagen"];
+                        
+                        pintar_mapa(false);
+                       
+                        numero_movimientos_mostrar++;
+                       
+                        actualizar_barra();
+                      }
+                 }
+
+
+               
+                function pulsar_tecla(e, evento_actual)
+                 {
+                    
+                    if (primer_evento == "") { primer_evento = evento_actual; }
+                   
+                    if (primer_evento != evento_actual) { primer_evento = ""; return; }
+
+                    
+                    if (e.keyCode) { var unicode = e.keyCode; }
+                    //else if (event.keyCode) { var unicode = event.keyCode; }
+                    else if (window.Event && e.which) { var unicode = e.which; }
+                    else { var unicode = 40; } //Si no existe, por defecto se utiliza la flecha hacia abajo.
+
+                   
+                    if (!juego_iniciado) { return; }
+
+                   
+                    var posicion_x = parseInt(document.getElementById("personaje").style.left); //Posicion horizontal.
+                    var posicion_y = parseInt(document.getElementById("personaje").style.top); //Posicion vertical.
+
+                   
+                    if (unicode == 40) { posicion_y += celda_height; imagen_personaje = (imagen_personaje == img_personaje_abajo1) ? img_personaje_abajo2 : img_personaje_abajo1; }
+                   
+                    else if (unicode == 39) { posicion_x += celda_width; imagen_personaje = (imagen_personaje == img_personaje_derecha1) ? img_personaje_derecha2 : img_personaje_derecha1; }
+                   
+                    else if (unicode == 37) { posicion_x -= celda_width; imagen_personaje = (imagen_personaje == img_personaje_izquierda1) ? img_personaje_izquierda2 : img_personaje_izquierda1; }
+                    
+                    else if (unicode == 38) { posicion_y -= celda_height; imagen_personaje = (imagen_personaje == img_personaje_arriba1) ? img_personaje_arriba2 : img_personaje_arriba1; }
+                   
+                    else if (unicode == 8 || unicode == 85 || unicode == 117)
+                     {
+                       
+                        deshacer_accion();
+                       
+                        return;
+                     }
+                   
+                    else if (unicode == 89 || unicode == 121)
+                     {
+                       
+                        rehacer_accion();
+                       
+                        return;
+                     }
+                   
+                    else if (unicode == 82 || unicode == 114)
+                     {
+                        
+                        reiniciar_nivel();
+                       
+                        return;
+                     }
+
+                  
+                    mover_personaje(posicion_x, posicion_y, imagen_personaje);
+                 }
+
+
+              
+                function mover_personaje(posicion_x, posicion_y, imagen_personaje)
+                 {
+                  
+                    if (imagen_personaje.src == "") { return; }
+                    
+                    
+                    if (posicion_x < 0 || posicion_x > niveles[nivel]["width"] * celda_width - celda_width) { return; }
+                   
+                    if (posicion_y < 0 || posicion_y > niveles[nivel]["height"] * celda_height - celda_height) { return; }
+                    
+                   
+                    posicion_x_anterior = parseInt(document.getElementById("personaje").style.left);
+                    posicion_y_anterior = parseInt(document.getElementById("personaje").style.top);
+                    
+                   
+                    posicion_x_mapa = niveles[nivel]["width"] - posicion_x_anterior / celda_width;
+                    posicion_y_mapa = posicion_y_anterior / celda_height + 1;
+                    posicion_anterior_mapa = niveles[nivel]["width"] * posicion_y_mapa - posicion_x_mapa;
+                   
+                   
+                    var casilla_enfrente = ""; //Variable que va a contenter el simbolo que hay en el mapa de la casilla de enfrente.
+                    var casilla_enfrente_posterior = ""; //Variable que va a contenter el simbolo que hay en el mapa de la casilla siguiente a la de enfrente.
+                    var posicion_mapa_casilla_enfrente = 0; //Variable que va a contenter la posicion en el mapa de la casilla de enfrente.
+                    var posicion_mapa_casilla_enfrente_posterior = 0; //Variable que va a contenter la posicion en el mapa de la casilla siguiente a la de enfrente.
+                                                           
+                   
+                    if (posicion_x > posicion_x_anterior)
+                     {
+                       
+                        if (posicion_anterior_mapa+2 <= niveles[nivel]["forma"].length) { posicion_mapa_casilla_enfrente = posicion_anterior_mapa+1; casilla_enfrente = niveles[nivel]["forma"].substring(posicion_anterior_mapa+1, posicion_anterior_mapa+2); } //Casilla de enfrente.
+                        if (posicion_anterior_mapa+3 <= niveles[nivel]["forma"].length) { posicion_mapa_casilla_enfrente_posterior = posicion_anterior_mapa+2; casilla_enfrente_posterior = niveles[nivel]["forma"].substring(posicion_anterior_mapa+2, posicion_anterior_mapa+3); } //Casilla siguiente a la de enfrente.
+                       
+                        if (casilla_enfrente == "$" && posicion_x + celda_width > niveles[nivel]["width"] * celda_width - celda_width) { return; }
+                        
+                        if (casilla_enfrente == "*" && posicion_x + celda_width > niveles[nivel]["width"] * celda_width - celda_width) { return; }
+                     }
+                   
+                    else if (posicion_x < posicion_x_anterior)
+                     {
+                        
+                        if (posicion_anterior_mapa-1 >= 0) { posicion_mapa_casilla_enfrente = posicion_anterior_mapa-1; casilla_enfrente = niveles[nivel]["forma"].substring(posicion_anterior_mapa, posicion_anterior_mapa-1); } //Casilla de enfrente.
+                        if (posicion_anterior_mapa-2 >= 0) { posicion_mapa_casilla_enfrente_posterior = posicion_anterior_mapa-2; casilla_enfrente_posterior = niveles[nivel]["forma"].substring(posicion_anterior_mapa-1, posicion_anterior_mapa-2); } //Casilla siguiente a la de enfrente.
+                       
+                        if (casilla_enfrente == "$" && posicion_x - celda_width < 0) { return; }
+                       
+                        if (casilla_enfrente == "*" && posicion_x - celda_width < 0) { return; }
+                     }
+                    
+                    else if (posicion_y < posicion_y_anterior)
+                     {
+                        
+                        if (posicion_anterior_mapa-niveles[nivel]["width"]+1 >= 0) { posicion_mapa_casilla_enfrente = posicion_anterior_mapa-niveles[nivel]["width"]; casilla_enfrente = niveles[nivel]["forma"].substring(posicion_anterior_mapa-niveles[nivel]["width"], posicion_anterior_mapa-niveles[nivel]["width"]+1); } //Casilla de enfrente.
+                        if (posicion_anterior_mapa-niveles[nivel]["width"]-niveles[nivel]["width"]+1 >= 0) { posicion_mapa_casilla_enfrente_posterior = posicion_anterior_mapa-niveles[nivel]["width"]-niveles[nivel]["width"]; casilla_enfrente_posterior = niveles[nivel]["forma"].substring(posicion_anterior_mapa-niveles[nivel]["width"]-niveles[nivel]["width"], posicion_anterior_mapa-niveles[nivel]["width"]-niveles[nivel]["width"]+1); } //Casilla siguiente a la de enfrente.
+                      
+                        if (casilla_enfrente == "$" && posicion_y - celda_height < 0) { return; }
+                     
+                        if (casilla_enfrente == "*" && posicion_y - celda_height < 0) { return; }
+                     }
+                   
+                    else if (posicion_y > posicion_y_anterior)
+                     {
+                        
+                        if (posicion_anterior_mapa+niveles[nivel]["width"]+1 <= niveles[nivel]["forma"].length) { posicion_mapa_casilla_enfrente = posicion_anterior_mapa+niveles[nivel]["width"]; casilla_enfrente = niveles[nivel]["forma"].substring(posicion_anterior_mapa+niveles[nivel]["width"], posicion_anterior_mapa+niveles[nivel]["width"]+1); } //Casilla de enfrente.
+                        if (posicion_anterior_mapa+niveles[nivel]["width"]+niveles[nivel]["width"]+1 <= niveles[nivel]["forma"].length) { posicion_mapa_casilla_enfrente_posterior = posicion_anterior_mapa+niveles[nivel]["width"]+niveles[nivel]["width"]; casilla_enfrente_posterior = niveles[nivel]["forma"].substring(posicion_anterior_mapa+niveles[nivel]["width"]+niveles[nivel]["width"], posicion_anterior_mapa+niveles[nivel]["width"]+niveles[nivel]["width"]+1); } //Casilla siguiente a la de enfrente.
+                        
+                        if (casilla_enfrente == "$" && posicion_y + celda_height > niveles[nivel]["height"] * celda_height - celda_height) { return; }
+                        
+                        if (casilla_enfrente == "*" && posicion_y + celda_height > niveles[nivel]["height"] * celda_height - celda_height) { return; }
+                     }
+                   
+                    else { return; }
+
+                        
+                    if (casilla_enfrente == "") { return; }
+
+                   
+                    if (casilla_enfrente == "#") { return; }
+                    
+                   
+                    if (casilla_enfrente == "$" && casilla_enfrente_posterior == "#") { return; }
+
+                    
+                    if (casilla_enfrente == "$" && casilla_enfrente_posterior == "$") { return; }
+
+                    
+                    if (casilla_enfrente == "$" && casilla_enfrente_posterior == "*") { return; }
+
+                    
+                    if (casilla_enfrente == "*" && casilla_enfrente_posterior == "$") { return; }
+
+                    
+                    if (casilla_enfrente == "*" && casilla_enfrente_posterior == "#") { return; }
+
+                    
+                    if (casilla_enfrente == "*" && casilla_enfrente_posterior == "*") { return; }
+
+                    
+                    if (casilla_enfrente == "$" && casilla_enfrente_posterior == "") { return; }
+
+                    
+                    niveles[nivel]["forma"] = niveles[nivel]["forma"].replace("@"," ");
+
+                    
+                    document.getElementById("personaje").style.left = posicion_x + "px";
+                    document.getElementById("personaje").style.top = posicion_y + "px";
+                    
+                    
+                    var se_ha_movido_pieza = false;
+
+                   
+                    if (casilla_enfrente == "$" && casilla_enfrente_posterior == "·")
+                     {
+                       
+                        se_ha_movido_pieza = true;                     
+                       
+                        niveles[nivel]["forma"] = niveles[nivel]["forma"].substring(0,posicion_mapa_casilla_enfrente) + " " + niveles[nivel]["forma"].substring(posicion_mapa_casilla_enfrente+1,niveles[nivel]["forma"].length);
+                       
+                        niveles[nivel]["forma"] = niveles[nivel]["forma"].substring(0,posicion_mapa_casilla_enfrente_posterior) + "*" + niveles[nivel]["forma"].substring(posicion_mapa_casilla_enfrente_posterior+1,niveles[nivel]["forma"].length);
+                      
+                        document.getElementById(posicion_mapa_casilla_enfrente).innerHTML = "&nbsp";
+                     
+                        document.getElementById(posicion_mapa_casilla_enfrente_posterior).innerHTML = '<img src="'+img_agujero_lleno.src+'" width="'+celda_width+'" height="'+celda_height+'">';
+                       
+                        numero_piezas_totales--;
+                     }
+                    
+                    
+                    else if (casilla_enfrente == "$" && casilla_enfrente_posterior == " " || casilla_enfrente == "$" && casilla_enfrente_posterior == "0")
+                     {
+                       
+                        se_ha_movido_pieza = true;
+                      
+                        niveles[nivel]["forma"] = niveles[nivel]["forma"].substring(0,posicion_mapa_casilla_enfrente) + " " + niveles[nivel]["forma"].substring(posicion_mapa_casilla_enfrente+1,niveles[nivel]["forma"].length);
+                     
+                        niveles[nivel]["forma"] = niveles[nivel]["forma"].substring(0,posicion_mapa_casilla_enfrente_posterior) + "$" + niveles[nivel]["forma"].substring(posicion_mapa_casilla_enfrente_posterior+1,niveles[nivel]["forma"].length);
+                      
+                        document.getElementById(posicion_mapa_casilla_enfrente).innerHTML = "&nbsp";
+                       
+                        document.getElementById(posicion_mapa_casilla_enfrente_posterior).innerHTML = '<img src="'+img_pieza.src+'" width="'+celda_width+'" height="'+celda_height+'">';
+                     }
+                   
+                    else if (casilla_enfrente == "*" && casilla_enfrente_posterior == " " || casilla_enfrente == "*" && casilla_enfrente_posterior == "0")
+                     {
+                        
+                        se_ha_movido_pieza = true;
+                       
+                        niveles[nivel]["forma"] = niveles[nivel]["forma"].substring(0,posicion_mapa_casilla_enfrente) + "·" + niveles[nivel]["forma"].substring(posicion_mapa_casilla_enfrente+1,niveles[nivel]["forma"].length);
+                       
+                        niveles[nivel]["forma"] = niveles[nivel]["forma"].substring(0,posicion_mapa_casilla_enfrente_posterior) + "$" + niveles[nivel]["forma"].substring(posicion_mapa_casilla_enfrente_posterior+1,niveles[nivel]["forma"].length);
+                      
+                        document.getElementById(posicion_mapa_casilla_enfrente).innerHTML = '<img src="'+img_agujero_vacio.src+'" width="'+celda_width+'" height="'+celda_height+'">';
+                        
+                        document.getElementById(posicion_mapa_casilla_enfrente_posterior).innerHTML = '<img src="'+img_pieza.src+'" width="'+celda_width+'" height="'+celda_height+'">';
+                       
+                        numero_piezas_totales++;
+                     }
+                   
+                    else if (casilla_enfrente == "*" && casilla_enfrente_posterior == "·")
+                     {
+                      
+                        se_ha_movido_pieza = true;
+                      
+                        niveles[nivel]["forma"] = niveles[nivel]["forma"].substring(0,posicion_mapa_casilla_enfrente) + "·" + niveles[nivel]["forma"].substring(posicion_mapa_casilla_enfrente+1,niveles[nivel]["forma"].length);
+                       
+                        niveles[nivel]["forma"] = niveles[nivel]["forma"].substring(0,posicion_mapa_casilla_enfrente_posterior) + "*" + niveles[nivel]["forma"].substring(posicion_mapa_casilla_enfrente_posterior+1,niveles[nivel]["forma"].length);
+                       
+                        document.getElementById(posicion_mapa_casilla_enfrente).innerHTML = '<img src="'+img_agujero_vacio.src+'" width="'+celda_width+'" height="'+celda_height+'">';
+                       
+                        document.getElementById(posicion_mapa_casilla_enfrente_posterior).innerHTML = '<img src="'+img_agujero_lleno.src+'" width="'+celda_width+'" height="'+celda_height+'">';
+                     }
+
+                  
+                    clearTimeout(movimiento_personaje);
+                
+                    movimiento_personaje = setTimeout("document.getElementById('personaje_imagen').src = imagen_personaje.src;", 150);
+                    
+                    
+                    numero_movimientos++;
+                    
+                    numero_movimientos_mostrar++;
+                  
+                    guardar_mapa();
+                    
+                    
+                    actualizar_barra();
+                    
+                    
+                    if (numero_piezas_totales <= 0) { pasar_nivel(); }
+                 }
+
+
+               
+                function recoger_mapa_url()
+                 {
+                   
+                    juego_iniciado = true;
+                    
+                   
+                    var url = window.location.href;
+
+                 
+                    if (url == "") { return; }
+
+                   
+                    var mapa_url_sucio = url.substring(url.indexOf("?")+1, url.length);
+                    var mapa_url = mapa_url_sucio.substring(mapa_url_sucio.indexOf("=")+1, mapa_url_sucio.indexOf("&width="));
+    
+                  
+                    var mapa_width_url_sucio = mapa_url_sucio.substring(mapa_url_sucio.indexOf("&")+1, mapa_url_sucio.indexOf("&height="));
+                    var mapa_width_url = mapa_width_url_sucio.substring(mapa_width_url_sucio.indexOf("=")+1, mapa_url_sucio.indexOf("&height="));
+
+                 
+                    var mapa_height_url_sucio = mapa_url_sucio.substring(mapa_url_sucio.indexOf("&height=")+1, mapa_url_sucio.length);
+                    var mapa_height_url = mapa_height_url_sucio.substring(mapa_height_url_sucio.indexOf("=")+1, mapa_height_url_sucio.length);
+
+                 
+                    if (mapa_url == "" || mapa_width_url == "" || mapa_height_url == "" || isNaN(mapa_width_url) || isNaN(mapa_height_url)) { iniciar_juego(nivel); return; }
+                  
+                    else
+                     {
+                      
+                        generar_niveles();
+                        
+                     
+                        if (!mapa_url_recogido) { numero_niveles++; }
+
+                      
+                        var mapa_url_refinado = unescape(mapa_url);
+                        // A => (espacio en blanco)
+                        // B => #
+                        // C => @
+                        // D => $
+                        // E => ·
+                        // F => *
+                        // G => +
+
+                        
+                        if (mapa_url_refinado.length != parseInt(unescape(mapa_width_url))*parseInt(unescape(mapa_height_url))) { alert("Failed to load map send by url because width and height are erroneous."); mapa_width = 10; mapa_height = 10; preparar_mapa(); return; }
+
+                       
+                        for (x=0; x<=mapa_url_refinado.length; x++) { mapa_url_refinado = mapa_url_refinado.replace("#", ""); }
+                        for (x=0; x<=mapa_url_refinado.length; x++)
+                         {
+                            mapa_url_refinado = mapa_url_refinado.replace("A", " ");
+                            mapa_url_refinado = mapa_url_refinado.replace("B", "#");
+                            mapa_url_refinado = mapa_url_refinado.replace("C", "@");
+                            mapa_url_refinado = mapa_url_refinado.replace("D", "$");
+                            mapa_url_refinado = mapa_url_refinado.replace("E", "·");
+                            mapa_url_refinado = mapa_url_refinado.replace("F", "*");
+                            mapa_url_refinado = mapa_url_refinado.replace("G", "+");
+                         }
+                         
+                      
+                        niveles[numero_niveles] = new Array();
+                        niveles[numero_niveles]["forma"] = mapa_url_refinado;
+                        niveles[numero_niveles]["width"] = parseInt(unescape(mapa_width_url));
+                        niveles[numero_niveles]["height"] = parseInt(unescape(mapa_height_url));
+           
+                        
+                        mapa_url_recogido = true;
+
+                       
+                        iniciar_juego(numero_niveles);
+                     }
+                 }
+                
+            //-->
+        </script>
+    </head>
+    <body bgcolor="black" text="yellow" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0" onLoad="javascript:recoger_mapa_url();" onKeyDown="javascript:pulsar_tecla(event, 'onkeypress');" onKeyPress="javascript:pulsar_tecla(event, 'onkeydown');"><font color=yellow>
+        <!-- Botones -->
+        <div id="botones" style="visibility:visible; background:transparent; color:yellow; left:10px; top:10px; width:600px; height:50px; padding:0px; position:absolute; font-size:12px; font-family:arial; line-height:18px; z-index:5;">
+            <a href="javascript:deshacer_accion();" title="Undo movement (U)"><img src="img/deshacer.gif" title="Undo movement (U)" alt="Undo movement" border="0" hspace="0" vspace="0" width="40" height="40"></a>
+            <a href="javascript:rehacer_accion();" title="Redo movement (Y)"><img src="img/rehacer.gif" title="Redo movement (Y)" alt="Redo movement" border="0" hspace="0" vspace="0" width="40" height="40"></a>
+            <a href="javascript:reiniciar_nivel();" title="Restart level (R)"><img src="img/reiniciar.gif" title="Restart level (R)" alt="Restart level" border="0" hspace="0" vspace="0" width="40" height="40"></a>
+            &nbsp;&nbsp; 
+            <div id="informacion" style="visibility:visible; background:transparent; color:yellow; left:190px; top:0px; width:480px; height:50px; padding:0px; position:absolute; font-size:12px; font-family:arial; line-height:18px; z-index:6;">
+                <div id="barra_estado" style="visibility:visible; background:transparent; color:yellow; left:0px; top:0px; width:480px; height:20px; padding:0px; position:absolute; font-size:12px; font-family:verdana; font-weight:bold; line-height:18px; z-index:7;">
+                    Loading...
+                </div>
+                <br>
+                &copy; Davidoban 
+            </div>
+        </div>
+        <!-- Fin de Botones. -->
+        <!-- Zona de Juego: -->
+        <div id="zona_juego" style="visibility:visible; background:transparent; color:yellow; left:10px; top:60px; width:340px; height:40px; padding:0px; position:absolute; font-size:1px; line-height:1px; z-index:1;">
+            <!-- Mapa: -->
+            <div id="mapa" style="visibility:hidden; background:transparent; color:yellow; left:0px; top:0px; width:340px; height:40px; padding:0px; position:absolute; font-size:1px; line-height:1px; z-index:2;">
+            </div>
+            <!-- Fin de Mapa. -->
+            <!-- Personaje: -->
+            <div id="personaje" style="visibility:hidden; background:transparent; color:#000000; left:0px; top:0px; width:40px; height:40px; padding:0px; position:absolute; font-size:1px; line-height:1px; z-index:3;">
+              <img src="img/yas_down1.gif" id="personaje_imagen" title="You are here" alt="@" width="40" height="40" border="0" hspace="0" vspace="0">
+            </div></font>
+            <!-- Fin de Personaje. -->
+            <!-- Mensaje: -->
+            <div id="mensaje" style="visibility:visible; background:#e28000; color:#000000; left:0px; top:30px; width:320px; height:20px; padding:0px; position:absolute; font-size:12px; font-weight:bold; font-family:verdana; line-height:20px; text-align:center; font-style:italic; filter:alpha(opacity=80); opacity:0.8; -moz-opacity:0.8; z-index:4;">
+                Loading...
+            </div>
+            <!-- Fin de Mensaje. -->
+        </div>
+        <!-- Fin de Zona de Juego. -->
+        <!-- Informacion: -->
+        <div id="informacion_autor" style="left:10px; top:530px; height:0px; position:absolute; border:0px; padding:0px; background:transparent; color:yellow; text-align:left; line-height:20px; text-decoration:none; font-family:verdana; font-size:10px; z-index:10;">
+            &copy; <b>Davidoban</b> gefoefeld door  <i>David Lejeune</i> (<a href="mailto:david.lejeune@republiek-vlaanderen.eu;">email</a>) &nbsp;<sup>(old school rebel)</sup>
+            
+            &nbsp;&nbsp;
+            <br>
+            &nbsp;&nbsp;<h3><i>Ter ondersteuning van de rechtmatige Vlaamse eis om vlaams geld in vlaamse handen te houden en niet in de bodemloze put die Belgie heet te (ver)gooien</i></h3>
+        <!-- Fin de Informacion. -->
+    </body>
+</html>
